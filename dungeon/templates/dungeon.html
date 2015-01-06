@@ -10,23 +10,22 @@
 
     <script type="text/javascript" src="{% static 'js/dungeon.js' %}"></script>
     <script type="text/javascript">
-        square_images = {}
-        square_types = {}
-
-        function set_square(squares_data, x, y, val){
-            if(x in squares_data == false){
-                squares_data[x] = {}
+        squares = {}
+        function set_square(squares, x, y, val){
+            if(x in squares == false){
+                squares[x] = {}
             }
-            squares_data[x][y] = val;
+            squares[x][y] = val;
         }
 
-        {% for s in squares %}
-        set_square(square_images, {{ s.x }}, {{ s.y }}, "{{ s.img_url }}");
-        set_square(square_types, {{ s.x }}, {{ s.y }}, "{{ s.square_type }}");{% endfor %}
+        {% for s in dungeon.squares %}
+        set_square(squares, {{ s.x }}, {{ s.y }}, {% square_js_object s %});{% endfor %}
     </script>
     <script type="text/javascript" src="{% static 'js/character.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/other_character.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/communication.js' %}"></script>
 </head>
-<body onload="init_dungeon(square_images);init_character();">
+<body onload="init_dungeon(squares);">
     <div id="viewport">
         <div id="dungeon_map"></div>
     </div>

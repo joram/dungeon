@@ -1,2 +1,2 @@
-from dungeon.models.dungeon import Dungeon
 from dungeon.models.square import Square
+from dungeon.models.dungeon_model import Dungeon

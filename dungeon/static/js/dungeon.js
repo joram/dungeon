@@ -5,7 +5,7 @@ function init_dungeon(squares){
         start_col: 0,
         start_row: 0,
         oncreate: function($element, x, y) {
-            src = squares[x] ? squares[x][y] ? squares[x][y] : '' : '';
+            src = squares[x] ? squares[x][y] ? squares[x][y]['image'] : '' : '';
             $element.css('background-image', 'url(' + src + ')');
             $element.attr('class', 'square');
         }

@@ -1,4 +1,5 @@
 import os
+import json
 import random
 from django import template
 
@@ -16,6 +17,7 @@ for keyword in KEYWORDS:
         if keyword in img:
             image_files[keyword].append(img)
 
+
 def _tile_image(name_contains="solid"):
     options = image_files.get(name_contains, [])
     if options:
@@ -25,8 +27,14 @@ def _tile_image(name_contains="solid"):
 
 @register.simple_tag
 def square_image(square):
-    if square.door:
-        return _tile_image("door%s" % square.door_type)
     if not square.solid:
         return _tile_image("empty")
     return _tile_image("solid")
+
+
+@register.simple_tag
+def square_js_object(square):
+    return json.dumps({
+        'image': square_image(square),
+        'solid': square.solid
+    })
