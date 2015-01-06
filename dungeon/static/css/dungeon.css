@@ -1,0 +1,29 @@
+
+.square {
+    background-size: 50px 50px;
+}
+
+#character {
+    width: 50px;
+    height: 50px;
+}
+
+#content {
+    margin: 0;
+    padding: 0;
+    border: solid thin black;
+}
+
+#viewport {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    border: solid thin black;
+    margin-left:auto;
+    margin-right:auto;
+    overflow:hidden;
+    color:#fff;
+    border:1px solid #ccc;
+    background-color:#000;
+}

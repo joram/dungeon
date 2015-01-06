@@ -1,0 +1,1 @@
+from square_image import square_image

@@ -1,0 +1,34 @@
+{% load square_image %}{% load static %}
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Dungeon</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dungeon.css' %}">
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.infinitedrag.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/dungeon.js' %}"></script>
+    <script type="text/javascript">
+        square_images = {}
+        square_types = {}
+
+        function set_square(squares_data, x, y, val){
+            if(x in squares_data == false){
+                squares_data[x] = {}
+            }
+            squares_data[x][y] = val;
+        }
+
+        {% for s in squares %}
+        set_square(square_images, {{ s.x }}, {{ s.y }}, "{{ s.img_url }}");
+        set_square(square_types, {{ s.x }}, {{ s.y }}, "{{ s.square_type }}");{% endfor %}
+    </script>
+    <script type="text/javascript" src="{% static 'js/character.js' %}"></script>
+</head>
+<body onload="init_dungeon(square_images);init_character();">
+    <div id="viewport">
+        <div id="dungeon_map"></div>
+    </div>
+</body>
+</html>
