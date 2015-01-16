@@ -1,0 +1,33 @@
+{% load square_image %}{% load static %}
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Dungeon</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/dungeon.css' %}">
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.infinitedrag.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/dungeon.js' %}"></script>
+    <script type="text/javascript">
+        squares = {}
+        function set_square(squares, x, y, val){
+            if(x in squares == false){
+                squares[x] = {}
+            }
+            squares[x][y] = val;
+        }
+
+        {% for s in dungeon.squares %}
+        set_square(squares, {{ s.x }}, {{ s.y }}, {% square_js_object s %});{% endfor %}
+    </script>
+    <script type="text/javascript" src="{% static 'js/character.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/other_character.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/communication.js' %}"></script>
+</head>
+<body onload="init_dungeon(squares);">
+    <div id="viewport">
+        <div id="dungeon_map"></div>
+    </div>
+</body>
+</html>

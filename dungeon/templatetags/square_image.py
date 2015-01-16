@@ -35,6 +35,10 @@ def square_image(square):
 @register.simple_tag
 def square_js_object(square):
     return json.dumps({
-        'image': square_image(square),
-        'solid': square.solid
+        'x': square.x,
+        'y': square.y,
+        'data': {
+            'image': square_image(square),
+            'solid': square.solid
+            }
     })

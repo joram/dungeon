@@ -1,1 +1,1 @@
-from dungeon_map import grid_map
+from dungeon.views.dungeon_view import dungeon

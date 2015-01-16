@@ -1,3 +1,4 @@
+import time
 import random
 from django.db import models
 from dungeon.models.square import Square
@@ -20,28 +21,29 @@ class Dungeon(models.Model):
     tunnel_probability = models.IntegerField(default=0, validators=[MaxValueValidator(100), MinValueValidator(1)])
     tunnel_entropy = models.IntegerField(default=0, validators=[MaxValueValidator(100), MinValueValidator(1)])
 
-    @property
-    def squares(self):
-        return Square.objects.filter(dungeon=self)
+    def squares(self, x, y, radius):
+        return Square.objects.filter(
+            dungeon=self,
+            x__gte=x-radius,
+            x__lte=x+radius,
+            y__gte=y-radius,
+            y__lte=y+radius)
 
-    def expand(self, x, y, radius):
+    def expand(self, x, y, radius, sleep_lots=False):
         total_prob = self.room_probability + self.tunnel_probability
         can_expand = True
         while can_expand:
-            endpoints = self.squares.filter(
-                endpoint=True,
-                x__gte=x-radius,
-                x__lte=x+radius,
-                y__gte=y-radius,
-                y__lte=y+radius)
+            endpoints = self.squares(x=x, y=y, radius=radius).filter(endpoint=True)
             can_expand = endpoints.exists()
-            print("exploring %s endpoints in range of (%s, %s)" % (endpoints.count(), x, y))
             for endpoint in endpoints:
+                if sleep_lots:
+                    time.sleep(0)
                 if random.randint(0, total_prob) < self.tunnel_probability:
                     Square.objects.build_tunnel(
                         dungeon=self,
                         square=endpoint,
-                        tunnel_length=random.randint(self.min_tunnel_length, self.max_tunnel_length))
+                        tunnel_length=random.randint(self.min_tunnel_length, self.max_tunnel_length),
+                        sleep_lots=sleep_lots)
                 else:
                     Square.objects.build_room(
                         starting_square=endpoint,

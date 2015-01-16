@@ -1,5 +1,6 @@
 import os
 import random
+import time
 from django.db import models
 
 DIRECTIONS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -29,7 +30,7 @@ def _tile_image(name_contains="solid"):
         return "/static/images/tiles/%s" % img
 
 
-class SquareManager(models.Manager):
+class BaseSquareManager(models.Manager):
 
     def solid(self, point):
         (x, y) = point
@@ -52,7 +53,15 @@ class SquareManager(models.Manager):
                 return False
         return True
 
-    def build_tunnel(self, dungeon, square, tunnel_length):
+    def _carve(self, dungeon, point):
+        square, _ = self.get_or_create(dungeon=dungeon, x=point[0], y=point[1])
+        square.solid = False
+        square.save()
+
+
+class TunnelBuildingSquareManager(BaseSquareManager):
+
+    def build_tunnel(self, dungeon, square, tunnel_length, sleep_lots=False):
         directions = list(DIRECTIONS)
         random.shuffle(directions)
         point = (square.x, square.y)
@@ -60,13 +69,16 @@ class SquareManager(models.Manager):
             to_point = add(point, direction)
             if self.can_build_to(point, to_point):
                 self.get_or_create(dungeon=dungeon, solid=False, endpoint=True, x=point[0], y=point[1])
-            self._build_tunnel_recursive(dungeon, point, direction, tunnel_length)
+            self._build_tunnel_recursive(dungeon, point, direction, tunnel_length, sleep_lots)
 
         # exhausted endpoint
         square.endpoint = False
         square.save()
 
-    def _build_tunnel_recursive(self, dungeon, current_point, direction, tunnel_length):
+    def _build_tunnel_recursive(self, dungeon, current_point, direction, tunnel_length, sleep_lots):
+
+        if sleep_lots:
+            time.sleep(0)
 
         if tunnel_length <= 0:
             self._carve(dungeon, current_point)
@@ -89,24 +101,19 @@ class SquareManager(models.Manager):
                 next_point = (current_point[0] + direction[0], current_point[1] + direction[1])
                 if self.can_build_to(current_point, next_point):
                     self._carve(dungeon, current_point)
-                    return self._build_tunnel_recursive(dungeon, next_point, direction, tunnel_length-1)
+                    return self._build_tunnel_recursive(dungeon, next_point, direction, tunnel_length-1, sleep_lots)
 
         # straight
         if not need_to_turn:
             self._carve(dungeon, current_point)
-            return self._build_tunnel_recursive(dungeon, forward_point, direction, tunnel_length-1)
+            return self._build_tunnel_recursive(dungeon, forward_point, direction, tunnel_length-1, sleep_lots)
 
         # stuck?
         self._carve(dungeon, current_point)
         return current_point, False
 
-    def _carve(self, dungeon, point):
-        square, _ = self.get_or_create(dungeon=dungeon, x=point[0], y=point[1])
-        square.solid = False
-        square.save()
 
-
-
+class RoomBuildingSquareManager(BaseSquareManager):
 
     def build_room(self, starting_square, width, height):
         top_left = (starting_square.x, starting_square.y)
@@ -118,12 +125,12 @@ class SquareManager(models.Manager):
                 for y in range(s_y, s_y+height):
                     self._carve(starting_square.dungeon, (x, y))
 
-            # built_doors = 0
-            # while built_doors < num_doors:
-            #     bottom_right = (starting_point[0]+width-1, starting_point[1]+height-1)
-            #     self._add_door_to_room(starting_point, bottom_right)
-            #     built_doors += 1
-            # return True
+            built_doors = 0
+            while built_doors < starting_square.dungeon.num_doors:
+                bottom_right = (starting_point[0]+width-1, starting_point[1]+height-1)
+                self._add_door_to_room(starting_point, bottom_right)
+                built_doors += 1
+            return True
 
         starting_square.endpoint = False
         starting_square.save()
@@ -163,7 +170,6 @@ class SquareManager(models.Manager):
             if self._valid_starting_point(starting_point, width, height, blocking_points):
                 return starting_point
 
-
     def _add_door_to_room(self, top_left, bottom_right):
         (tl_x, tl_y) = top_left
         (br_x, br_y) = bottom_right
@@ -191,6 +197,10 @@ class SquareManager(models.Manager):
         return False
 
 
+class SquareManager(TunnelBuildingSquareManager, RoomBuildingSquareManager):
+    pass
+
+
 class Square(models.Model):
 
     SQUARE_TYPES = (
@@ -215,7 +225,7 @@ class Square(models.Model):
         return _tile_image("empty")
 
     def __str__(self):
-        return "(%s, %s) %s" % (self.x, self.y, self.square_type)
+        return "(%s, %s) %s" % (self.x, self.y, self.solid)
 
     class Meta:
         app_label = 'dungeon'

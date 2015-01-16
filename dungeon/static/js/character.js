@@ -1,10 +1,11 @@
 $character = $('<img class="character" id="character" class="square">');
-$character.attr('src', '/static/images/tiles/character.png');
 
-function place_character(x, y){
+
+function place_character(x, y, img_url){
+    center_dungeon(x, y);
+    $character.attr('src', img_url);
     $parent = $("div[row="+y+"][col="+x+"]");
     $character.detach().appendTo($parent);
-    center_dungeon(x, y);
 }
 
 function is_solid(x, y){
@@ -24,8 +25,7 @@ function move_character(x_offset, y_offset){
             action: "move_character",
             object: {owner:my_uuid},
             position: {x: x, y: y}}
-        //post_data = {}
-        $.post('/api/action/', post_data);
+        send_server(post_data)
     }
 }
 
