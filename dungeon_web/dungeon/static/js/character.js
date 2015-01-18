@@ -9,7 +9,11 @@ function place_character(x, y, img_url){
 }
 
 function is_solid(x, y){
-    return squares[x] ? squares[x][y] ? squares[x][y]['solid'] : true : true;
+    square = get_entity(x, y, 'square')
+    if(square){
+        return square.parameters.solid;
+    }
+    return true;
 }
 
 function can_move(x,y){

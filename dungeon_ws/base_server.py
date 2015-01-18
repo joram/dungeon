@@ -16,17 +16,6 @@ def get_clients(excluding=None):
     return ws_clients
 
 
-class WSMessageSender(threading.Thread):
-
-    def run(self):
-        while True:
-            for ws in ws_clients:
-                while ws.messages:
-                    msg = ws.messages.pop(0)
-                    payload = json.dumps(msg).encode('utf8')
-                    ws.sendMessage(payload, False)
-                    time.sleep(0)
-
 
 class BaseServerProtocol(WebSocketServerProtocol):
 
@@ -34,7 +23,6 @@ class BaseServerProtocol(WebSocketServerProtocol):
         WebSocketServerProtocol.__init__(self)
         self.closed = False
         self.uuid = str(uuid.uuid4())
-        self.messages = []
 
     def onConnect(self, request):
         print("Client connecting: {0}".format(request.peer))
@@ -55,8 +43,9 @@ class BaseServerProtocol(WebSocketServerProtocol):
             if send:
                 client.send(payload)
 
-    def send(self, payload):
-        self.messages.append(payload)
+    def send(self, message):
+        payload = json.dumps(message).encode('utf8')
+        self.sendMessage(payload, False)
 
     def onClose(self, wasClean, code, reason):
         global ws_clients
@@ -66,13 +55,8 @@ class BaseServerProtocol(WebSocketServerProtocol):
             ws_clients.remove(self)
 
 
-
 def run_server(server_protocol, port=8765):
-
-    ws_sender = WSMessageSender()
-    ws_sender.start()
-
-    factory = WebSocketServerFactory("ws://192.168.1.162", externalPort=port, debug=False)
+    factory = WebSocketServerFactory("ws://0.0.0.0", externalPort=port, debug=False)
     factory.protocol = server_protocol
     loop = asyncio.get_event_loop()
     coro = loop.create_server(factory, '0.0.0.0', port)

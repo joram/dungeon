@@ -3,7 +3,6 @@ function send_server(obj){
 }
 
 function onOpen(evt){
-    console.log("open");
     obj = {"action": "connect"};
     send_server(obj);
 }
@@ -15,7 +14,7 @@ function onMessage(evt){
     msg = JSON.parse(evt.data);
 
     if(msg.action){
-        console.log(msg.action+": "+msg);
+//        console.log(msg.action+": "+msg);
     }
 
     if(msg.action=='welcome'){

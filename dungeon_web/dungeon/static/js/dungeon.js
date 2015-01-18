@@ -1,6 +1,5 @@
-squares = {}
 
-function init_dungeon(squares){
+function init_dungeon(){
     infinitedrag = jQuery.infinitedrag("#dungeon_map", {}, {
         width: 50,
         height: 50,
@@ -17,27 +16,43 @@ function center_dungeon(x, y){
 }
 
 function update_square(x, y){
-    src = squares[x] ? squares[x][y] ? squares[x][y]['image'] : '' : '';
-    $element = $("div[row="+y+"][col="+x+"]");
-    if(src){
-       $element.css('background-image', 'url(' + src + ')');
+    $square_element = $("div[row="+y+"][col="+x+"]");
+    $square_element.attr('class', 'square');
+    square = get_entity(x, y, 'square');
+    if(square){
+       src = square.parameters.image;
+       $square_element.css('background-image', 'url(' + src + ')');
     };
-    $element.attr('class', 'square');
-}
 
-function add_square(square){
-    x = square.x;
-    y = square.y;
-    data = square.data;
-
-    if(x in squares == false){squares[x] = {}}
-    squares[x][y] = data;
-    update_square(x, y);
-}
-
-function add_squares(more_squares){
-    more_squares.forEach(function(square){
-        square = JSON.parse(square);
-        add_square(square);
+    get_entities(x, y).each(function(entity){
+        if(entity.type != 'square'){
+            if(entity.element){
+                entity.element.appendTo($square_element);
+            }
+        }
     });
+
+}
+
+
+function add_squares(squares){
+
+    function add_square_recursive(square){
+        add_entity(square.x, square.y, 'square', '', '', square.data);
+        update_square(square.x, square.y);
+        add_next_square();
+    }
+
+    function add_next_square(){
+        if(squares){
+            setTimeout(function(){
+                square = JSON.parse(squares.pop());
+                add_square_recursive(square);
+            }, 100);
+        } else {
+            adding_squares = false;
+        }
+    }
+
+    add_next_square();
 }

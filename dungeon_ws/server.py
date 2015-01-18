@@ -4,7 +4,7 @@ import os
 import time
 import datetime
 import threading
-from ws_server.base_server import BaseServerProtocol, run_server, get_clients
+from base_server import BaseServerProtocol, run_server, get_clients
 from dungeon.models import Character, Dungeon
 from django.core.wsgi import get_wsgi_application
 from dungeon.templatetags.square_image import square_js_object
@@ -13,7 +13,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'django.settings'
 application = get_wsgi_application()
 
 NOTIFY_SQUARES_DELTA_SECONDS = 1
-TUNNEL_GENERATION_RADIUS = 10
+TUNNEL_GENERATION_RADIUS = 30
 NOTIFICATION_RADIUS = 20
 
 
@@ -26,15 +26,6 @@ class TunnelGenerationThread(threading.Thread):
             for character in characters:
                 dungeon.expand(character.x, character.y, TUNNEL_GENERATION_RADIUS, True)
             time.sleep(5)
-
-
-class NotifyNearbySquares(threading.Thread):
-
-    def run(self):
-        while True:
-            for client in get_clients():
-                client.notify_nearby_squares(radius=NOTIFICATION_RADIUS)
-            time.sleep(0.1)
 
 
 class DungeonProtocol(BaseServerProtocol):
@@ -115,7 +106,7 @@ class DungeonProtocol(BaseServerProtocol):
 
             # place already existing entities
             for other_client in get_clients(excluding=[self.uuid]):
-                print("telling %s I spawned" % other_client.uuid)
+                print("spawning already existing: %s" % other_client.uuid)
                 spawn_message = {
                     'action': 'spawn',
                     'position': {
@@ -145,6 +136,7 @@ class DungeonProtocol(BaseServerProtocol):
         self.character.y = message.get('position', {}).get('y', 0)
         self.character.save()
         self.broadcast(message, ignoring=[self.uuid])
+        self.notify_nearby_squares(radius=NOTIFICATION_RADIUS)
 
     def onClose(self, wasClean, code, reason):
         super(DungeonProtocol, self).onClose(wasClean, code, reason)
@@ -166,10 +158,7 @@ class DungeonProtocol(BaseServerProtocol):
 
 if __name__ == '__main__':
     Character.objects.all().update(active=False)
-    dungeon_generator_thread = TunnelGenerationThread()
-    dungeon_generator_thread.start()
-
-    notify_nearby_squares_thread = NotifyNearbySquares()
-    notify_nearby_squares_thread.start()
+    # dungeon_generator_thread = TunnelGenerationThread()
+    # dungeon_generator_thread.start()
 
     run_server(DungeonProtocol)

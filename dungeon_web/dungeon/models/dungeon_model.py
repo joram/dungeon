@@ -14,6 +14,7 @@ class Dungeon(models.Model):
     max_room_width = models.IntegerField()
     min_room_height = models.IntegerField()
     max_room_height = models.IntegerField()
+    num_doors = models.IntegerField(default=2)
 
     # tunnel stats
     min_tunnel_length = models.IntegerField()

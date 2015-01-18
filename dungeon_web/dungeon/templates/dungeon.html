@@ -8,24 +8,15 @@
     <script type="text/javascript" src="{% static 'js/jquery-ui.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery.infinitedrag.js' %}"></script>
 
+    <script type="text/javascript" src="{% static 'js/taffy-min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/entities.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/dungeon.js' %}"></script>
-    <script type="text/javascript">
-        squares = {}
-        function set_square(squares, x, y, val){
-            if(x in squares == false){
-                squares[x] = {}
-            }
-            squares[x][y] = val;
-        }
 
-        {% for s in dungeon.squares %}
-        set_square(squares, {{ s.x }}, {{ s.y }}, {% square_js_object s %});{% endfor %}
-    </script>
     <script type="text/javascript" src="{% static 'js/character.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/other_character.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/communication.js' %}"></script>
 </head>
-<body onload="init_dungeon(squares);">
+<body onload="init_dungeon();">
     <div id="viewport">
         <div id="dungeon_map"></div>
     </div>

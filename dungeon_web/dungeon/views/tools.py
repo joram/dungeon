@@ -9,19 +9,32 @@ def build_dungeon(request):
     print("building Dungeon")
     Dungeon.objects.all().delete()
     Square.objects.all().delete()
+    # d = Dungeon.objects.create(
+    #     name="Main Dungeon",
+    #     min_room_width=3,
+    #     max_room_width=10,
+    #     min_room_height=3,
+    #     max_room_height=10,
+    #     min_tunnel_length=3,
+    #     max_tunnel_length=15,
+    #     tunnel_entropy=40,
+    #     room_probability=30,
+    #     tunnel_probability=70)
+
     d = Dungeon.objects.create(
         name="Main Dungeon",
-        min_room_width=3,
-        max_room_width=10,
-        min_room_height=3,
-        max_room_height=10,
+        min_room_width=5,
+        max_room_width=5,
+        min_room_height=5,
+        max_room_height=5,
         min_tunnel_length=3,
-        max_tunnel_length=15,
-        tunnel_entropy=40,
+        max_tunnel_length=5,
+        tunnel_entropy=0,
         room_probability=30,
         tunnel_probability=70)
+
     Square.objects.create(dungeon=d, solid=False, endpoint=True, x=0, y=0)
-    d.expand(0, 0, 10)
+    d.expand(0, 0, 30)
     context = {'dungeon': d}
 
     print("building Characters")
